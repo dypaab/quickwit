@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quickwit</title>
+<meta name="description" content="Trois questions surprenantes par jour. Des réponses à raconter.">
+<link rel="icon" href="play/favicon.ico">
+<style>
+  @font-face {
+    font-family: Literata;
+    src: url(literata-600.ttf) format('truetype');
+    font-weight: 600;
+    font-display: swap;
+  }
+  /* Same paper-and-ink palette as the app (src/theme.ts). */
+  :root {
+    --paper: #F5F0E6; --ink: #1F1C17; --secondary: #4A453D; --muted: #6E675F;
+    --border: #8C8475; --pressed: #EAE3D6; --right: #2F6B4A; --wrong: #A0442F; --on-fill: #FBF8F2;
+    --category: #566628;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #191714; --ink: #EEE8DD; --secondary: #C8C0B3; --muted: #9A9286;
+      --border: #6B655B; --pressed: #24211D; --right: #3B7353; --wrong: #9C4433; --on-fill: #F6F1E8;
+      --category: #B5C77D;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 17px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 560px; margin: 0 auto; padding: 20px 24px 48px; }
+  header { display: flex; justify-content: space-between; align-items: center; }
+  .wordmark { font-family: Literata, Georgia, serif; font-weight: 600; font-size: 20px; }
+  .lang { color: var(--ink); font-size: 13px; font-weight: 600; text-decoration: none;
+    border: 1px solid var(--border); border-radius: 6px; padding: 2px 7px; }
+  h1 { font-family: Literata, Georgia, serif; font-weight: 600; font-size: 34px; line-height: 1.2; margin: 56px 0 12px; }
+  .lede { color: var(--secondary); margin: 0 0 40px; }
+  .card { border-top: 1px solid var(--border); padding-top: 28px; }
+  .category { color: var(--category); font-size: 14px; font-weight: 600; margin: 0 0 10px; }
+  .question { font-family: Literata, Georgia, serif; font-weight: 600; font-size: 24px; line-height: 1.35; margin: 0 0 22px; }
+  .choice { display: block; width: 100%; text-align: left; font: inherit; color: var(--ink); background: none;
+    border: 1.5px solid var(--border); border-radius: 10px; padding: 13px 16px; margin-bottom: 10px; cursor: pointer; }
+  .choice:hover:enabled { background: var(--pressed); }
+  .choice.right { background: var(--right); border-color: var(--right); color: var(--on-fill); }
+  .choice.wrong { background: var(--wrong); border-color: var(--wrong); color: var(--on-fill); }
+  .choice:disabled:not(.right):not(.wrong) { opacity: .45; }
+  .result[hidden] { display: none; }
+  .verdict { font-weight: 600; margin: 14px 0 2px; }
+  .verdict.right { color: var(--right); }
+  .verdict.wrong { color: var(--wrong); }
+  .explanation { color: var(--secondary); margin: 0; }
+  .source { color: var(--muted); font-size: 14px; }
+  .play { display: inline-block; margin-top: 36px; background: var(--ink); color: var(--paper);
+    text-decoration: none; font-weight: 600; border-radius: 10px; padding: 13px 20px; }
+  .note { color: var(--muted); font-size: 14px; margin-top: 40px; }
+  @media (prefers-color-scheme: dark) {
+    .verdict.right { color: #86C9A0; }
+    .verdict.wrong { color: #E8907C; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <span class="wordmark">Quickwit</span>
+    <a class="lang" id="lang" href="?lang=en" lang="en" aria-label="Switch to English">EN</a>
+  </header>
+
+  <h1 data-t="promise">Trois questions surprenantes par jour. Des réponses à raconter.</h1>
+  <p class="lede" data-t="lede">Pas de compte, rien à régler. Tu ouvres, tu réponds, tu apprends quelque chose en dix secondes.</p>
+
+  <section class="card" aria-labelledby="question">
+    <p class="category" data-t="category">Essaie celle-ci · Nature</p>
+    <p class="question" id="question" data-t="question">Pour un botaniste, la banane est une baie.</p>
+    <button class="choice" data-answer="true" data-t="true">Vrai</button>
+    <button class="choice" data-answer="false" data-t="false">Faux</button>
+    <div class="result" id="result" aria-live="polite" hidden>
+      <p class="verdict" id="verdict"></p>
+      <p class="explanation" data-t="explanation">Une baie naît d’une seule fleur à un seul ovaire. La banane coche les cases. La fraise, curieusement, non.</p>
+      <a class="source" id="source" href="https://fr.wikipedia.org/wiki/Banane" data-t="source">Source : Wikipédia</a>
+    </div>
+  </section>
+
+  <!-- Relative links: the site works at a domain root or under a GitHub Pages path. -->
+  <a class="play" id="play" href="play/?lang=fr" data-t="play">Jouer au défi du jour</a>
+
+  <p class="note" data-t="note">Chaque carte est relue par deux IA, et affiche sa source Wikipédia quand elle en a une. Gratuit, dans le navigateur.</p>
+</main>
+
+<script>
+  // The page is written in French; English replaces the marked text when the
+  // visitor's browser is in another language, or with ?lang=en.
+  const en = {
+    promise: 'Three surprising questions a day. Answers worth telling.',
+    lede: 'No account, nothing to set up. Open it, answer, learn something in ten seconds.',
+    category: 'Try this one · Nature',
+    question: 'Botanically speaking, a banana is a berry.',
+    true: 'True',
+    false: 'False',
+    explanation: "A berry grows from one flower with one ovary. Bananas qualify. Strawberries, oddly, don't.",
+    source: 'Source: Wikipedia',
+    play: "Play today's challenge",
+    note: 'Every card is checked by two AIs and shows its Wikipedia source when it has one. Free, in your browser.',
+  };
+  const verdicts = { fr: ['Exact.', 'Pas tout à fait.'], en: ['Right.', 'Not quite.'] };
+
+  const forced = new URLSearchParams(location.search).get('lang');
+  const lang = forced === 'en' || forced === 'fr' ? forced : navigator.language.startsWith('fr') ? 'fr' : 'en';
+
+  if (lang === 'en') {
+    document.documentElement.lang = 'en';
+    document.title = 'Quickwit';
+    document.querySelectorAll('[data-t]').forEach((el) => { el.textContent = en[el.dataset.t]; });
+    document.getElementById('source').href = 'https://en.wikipedia.org/wiki/Banana';
+    document.getElementById('play').href = 'play/?lang=en';
+    const switcher = document.getElementById('lang');
+    Object.assign(switcher, { href: '?lang=fr', textContent: 'FR', lang: 'fr' });
+    switcher.setAttribute('aria-label', 'Passer en français');
+  }
+
+  document.querySelectorAll('.choice').forEach((button) => {
+    button.addEventListener('click', () => {
+      const right = button.dataset.answer === 'true';
+      document.querySelectorAll('.choice').forEach((b) => {
+        b.disabled = true;
+        if (b.dataset.answer === 'true') b.classList.add('right');
+      });
+      if (!right) button.classList.add('wrong');
+      const verdict = document.getElementById('verdict');
+      verdict.textContent = verdicts[lang][right ? 0 : 1];
+      verdict.className = `verdict ${right ? 'right' : 'wrong'}`;
+      document.getElementById('result').hidden = false;
+    });
+  });
+</script>
+</body>
+</html>
