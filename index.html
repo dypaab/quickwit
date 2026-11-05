@@ -13,6 +13,10 @@
 <meta property="og:image" content="https://dypaab.github.io/quickwit/share.png">
 <meta property="og:url" content="https://dypaab.github.io/quickwit/">
 <meta property="og:type" content="website">
+<!-- Challenge links point here so messaging apps show the preview above; people go straight to the card. -->
+<script>
+  if (new URLSearchParams(location.search).has('duel')) location.replace('play/' + location.search);
+</script>
 <style>
   @font-face {
     font-family: Literata;
